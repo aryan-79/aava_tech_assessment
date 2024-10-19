@@ -64,11 +64,14 @@ export default function Login() {
             Continue With Github
           </button>
         </div>
-        <a href="/docs" className="flex items-center gap-2">
+        <button
+          className="flex items-center text-blue-600 gap-2"
+          onClick={() => navigate("/docs")}
+        >
           <FaBookOpen />
           <span className="inline">Go to Docs</span>
           <FaLongArrowAltRight />
-        </a>
+        </button>
       </div>
     );
   }
