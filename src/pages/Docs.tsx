@@ -32,7 +32,7 @@ const Docs = () => {
           <p className="font-semibold">uuid:</p>
           <p>
             In this project, uuid has been used to create a unique id for each
-            post.
+            post image stored in supabase storage.
           </p>
         </div>
         <div>
