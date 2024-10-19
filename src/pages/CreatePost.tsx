@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { v4 as uuidv4 } from "uuid";
@@ -24,6 +24,70 @@ const CreatePost = () => {
     }
   }, [user, loading, navigate]);
 
+  const handleImageSelect = useCallback(() => {
+    inputFileRef.current?.click();
+  }, []);
+
+  const handleFileChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      if (event.target.files && event.target.files[0]) {
+        setImage(event.target.files[0]);
+      }
+    },
+    []
+  );
+
+  const handleSubmit = useCallback(
+    async (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      setIsSubmitting(true);
+
+      try {
+        if (!user) throw new Error("User not authenticated");
+
+        let imageUrl = null;
+
+        if (image) {
+          const fileExt = image.name.split(".").pop();
+          const fileName = `${uuidv4()}.${fileExt}`;
+          console.log(user.id);
+          const { error: uploadError } = await supabase.storage
+            .from("post-images")
+            .upload(fileName, image);
+          if (uploadError) console.log("upload error");
+
+          if (uploadError) throw uploadError;
+
+          const {
+            data: { publicUrl },
+          } = supabase.storage.from("post-images").getPublicUrl(fileName);
+
+          imageUrl = publicUrl;
+        }
+
+        const { error: insertError } = await supabase.from("posts").insert({
+          title,
+          content,
+          image_url: imageUrl,
+          like_count: 0,
+          repost_count: 0,
+          user_id: user.id,
+        });
+
+        if (insertError) throw insertError;
+        toast.success("Post Created");
+
+        navigate("/");
+      } catch (error) {
+        console.error("Error creating post:", error);
+        toast.error("Failed to Create Post");
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [user, image, title, content, supabase, navigate]
+  );
+
   if (loading) {
     return <Loader />;
   }
@@ -31,64 +95,6 @@ const CreatePost = () => {
   if (!user) {
     return null;
   }
-
-  const handleImageSelect = () => {
-    inputFileRef.current?.click();
-  };
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      setImage(event.target.files[0]);
-    }
-  };
-
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      if (!user) throw new Error("User not authenticated");
-
-      let imageUrl = null;
-
-      if (image) {
-        const fileExt = image.name.split(".").pop();
-        const fileName = `${uuidv4()}.${fileExt}`;
-        console.log(user.id);
-        const { error: uploadError } = await supabase.storage
-          .from("post-images")
-          .upload(fileName, image);
-        if (uploadError) console.log("upload error");
-
-        if (uploadError) throw uploadError;
-
-        const {
-          data: { publicUrl },
-        } = supabase.storage.from("post-images").getPublicUrl(fileName);
-
-        imageUrl = publicUrl;
-      }
-
-      const { error: insertError } = await supabase.from("posts").insert({
-        title,
-        content,
-        image_url: imageUrl,
-        like_count: 0,
-        repost_count: 0,
-        user_id: user.id,
-      });
-
-      if (insertError) throw insertError;
-      toast.success("Post Created");
-
-      navigate("/");
-    } catch (error) {
-      console.error("Error creating post:", error);
-      toast.error("Failed to Create Post");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   return (
     <div className="max-w-[450px] mx-auto p-4 h-screen grid items-center">

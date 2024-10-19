@@ -1,5 +1,5 @@
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { IoMdShareAlt } from "react-icons/io";
 
 import { useAuthenticated } from "@/hooks/useAuthenticated";
@@ -28,44 +28,57 @@ const Repost = ({
   const supabase = useSupabaseClient();
   const { user } = useAuthenticated();
 
-  const createRepost = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!user) {
-      alert("Please sign in to repost.");
-      return;
-    }
-    setLoading(true);
+  const createRepost = useCallback(
+    async (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      if (!user) {
+        alert("Please sign in to repost.");
+        return;
+      }
+      setLoading(true);
 
-    const newTitle = `Original Post Title: ${title}\nRepost Title: ${repostTitle}`;
-    const { error } = await supabase.from("posts").insert({
-      title: newTitle,
+      const newTitle = `Original Post Title: ${title}\nRepost Title: ${repostTitle}`;
+      const { error } = await supabase.from("posts").insert({
+        title: newTitle,
+        content,
+        image_url,
+        like_count: 0,
+        repost_count: 0,
+        user_id: user.id,
+      });
+
+      if (error) {
+        console.error(`Error in repost: ${error.message}`);
+        toast.error(`Failed to repost: ${error.message}`);
+      } else {
+        handleRepostSuccess();
+        setNewRepostCount((prev) => prev + 1);
+        toast.success("Reposted Successfully");
+        setLoading(false);
+        setShowRepostModal(false);
+        const { error: updatePostCountError } = await supabase
+          .from("posts")
+          .update({
+            repost_count: repostCount + 1,
+          })
+          .eq("id", postId);
+        if (updatePostCountError)
+          console.log(`Error: ${updatePostCountError.message}`);
+        setRepostTitle("");
+      }
+    },
+    [
+      user,
+      supabase,
+      title,
+      repostTitle,
       content,
       image_url,
-      like_count: 0,
-      repost_count: 0,
-      user_id: user.id,
-    });
-
-    if (error) {
-      console.error(`Error in repost: ${error.message}`);
-      toast.error(`Failed to repost: ${error.message}`);
-    } else {
-      handleRepostSuccess();
-      setNewRepostCount((prev) => prev + 1);
-      toast.success("Reposted Successfully");
-      setLoading(false);
-      setShowRepostModal(false);
-      const { error: updatePostCountError } = await supabase
-        .from("posts")
-        .update({
-          repost_count: repostCount + 1,
-        })
-        .eq("id", postId);
-      if (updatePostCountError)
-        console.log(`Error: ${updatePostCountError.message}`);
-      setRepostTitle("");
-    }
-  };
+      handleRepostSuccess,
+      postId,
+      repostCount,
+    ]
+  );
   return (
     <>
       {showRepostModal && (

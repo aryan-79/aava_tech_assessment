@@ -36,11 +36,11 @@ const LandingPage = () => {
     fetchPosts();
   }, [fetchPosts]);
 
-  const handleLogOut = async () => {
+  const handleLogOut = useCallback(async () => {
     await supabase.auth.signOut();
     navigate("/login");
     toast.success("Logged out successfully");
-  };
+  }, [supabase, navigate]);
 
   const handleRepostSuccess = () => {
     fetchPosts();

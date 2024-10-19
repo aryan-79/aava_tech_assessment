@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser, useSupabaseClient } from "@supabase/auth-helpers-react";
 import { BsGithub, BsGoogle } from "react-icons/bs";
@@ -18,28 +18,16 @@ export default function Login() {
     }
   }, [user, navigate]);
 
-  const handleGoogleSignin = async () => {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-    });
-    if (data) {
-      console.log("logged in successfully");
-    } else if (error) {
-      console.error(error);
-      toast.error(error.message);
-    }
-  };
-  const handleGithubSignin = async () => {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: "github",
-    });
-    if (data) {
-      console.log("logged in successfully");
-    } else if (error) {
-      console.error(error);
-      toast.error(error.message);
-    }
-  };
+  const handleOAuthSignIn = useCallback(
+    async (provider: "google" | "github") => {
+      const { error } = await supabase.auth.signInWithOAuth({ provider });
+      if (error) {
+        console.error(error);
+        toast.error(error.message);
+      }
+    },
+    [supabase]
+  );
 
   if (!user) {
     return (
@@ -48,7 +36,7 @@ export default function Login() {
           <button
             className="btn-primary flex items-center gap-2"
             onClick={() => {
-              handleGoogleSignin();
+              handleOAuthSignIn("google");
             }}
           >
             <BsGoogle />
@@ -57,7 +45,7 @@ export default function Login() {
           <button
             className="btn-primary flex items-center gap-2"
             onClick={() => {
-              handleGithubSignin();
+              handleOAuthSignIn("github");
             }}
           >
             <BsGithub />

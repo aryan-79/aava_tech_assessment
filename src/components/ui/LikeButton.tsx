@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { FaThumbsUp } from "react-icons/fa6";
 
 interface LikeButtonProps {
@@ -13,42 +13,44 @@ export const LikeButton = ({ post_id, like_count }: LikeButtonProps) => {
   const [isLiked, setIsLiked] = useState<boolean>(false);
   const [likeCount, setLikeCount] = useState<number>(like_count);
 
-  useEffect(() => {
-    const checkLikedStatus = async () => {
-      try {
-        const { data, error } = await supabase
-          .from("likes")
-          .select()
-          .eq("post_id", post_id)
-          .eq("user_id", liker_id)
-          .maybeSingle();
-
-        if (error && error.code !== "PGRST116") {
-          throw error.message;
-        }
-
-        setIsLiked(!!data);
-      } catch (error) {
-        console.error(`Error checking like status: ${error}`);
-      }
-    };
-
-    checkLikedStatus();
-  }, []);
-
-  const updateLikeCount = async (count: number) => {
+  const checkLikedStatus = useCallback(async () => {
     try {
-      const { error } = await supabase
-        .from("posts")
-        .update({ like_count: count })
-        .eq("id", post_id);
-      if (error) throw error.message;
-    } catch (error) {
-      console.error(`Error updating like count: ${error}`);
-    }
-  };
+      const { data, error } = await supabase
+        .from("likes")
+        .select()
+        .eq("post_id", post_id)
+        .eq("user_id", liker_id)
+        .maybeSingle();
 
-  const handleLike = async () => {
+      if (error && error.code !== "PGRST116") {
+        throw error.message;
+      }
+
+      setIsLiked(!!data);
+    } catch (error) {
+      console.error(`Error checking like status: ${error}`);
+    }
+  }, [supabase, post_id, liker_id]);
+  useEffect(() => {
+    checkLikedStatus();
+  }, [checkLikedStatus]);
+
+  const updateLikeCount = useCallback(
+    async (count: number) => {
+      try {
+        const { error } = await supabase
+          .from("posts")
+          .update({ like_count: count })
+          .eq("id", post_id);
+        if (error) throw error.message;
+      } catch (error) {
+        console.error(`Error updating like count: ${error}`);
+      }
+    },
+    [supabase, post_id]
+  );
+
+  const handleLike = useCallback(async () => {
     try {
       if (isLiked) {
         const { error } = await supabase
@@ -76,7 +78,7 @@ export const LikeButton = ({ post_id, like_count }: LikeButtonProps) => {
     } catch (error) {
       console.error(`Error handling like: ${error}`);
     }
-  };
+  }, [isLiked, supabase, post_id, liker_id, likeCount, updateLikeCount]);
 
   return (
     <button
