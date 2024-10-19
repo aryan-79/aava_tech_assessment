@@ -6,9 +6,11 @@ import { useCallback, useEffect, useState } from "react";
 import { IoMdCreate } from "react-icons/io";
 import { IoExitOutline } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const LandingPage = () => {
   const [posts, setPosts] = useState<PostType[]>([]);
+  const [loadingPosts, setLoadingPosts] = useState<boolean>(true);
   const { loading } = useAuthenticated();
 
   const navigate = useNavigate();
@@ -24,6 +26,7 @@ const LandingPage = () => {
       return;
     }
     setPosts(data);
+    setLoadingPosts(false);
   }, [supabase]);
 
   useEffect(() => {
@@ -33,13 +36,14 @@ const LandingPage = () => {
   const handleLogOut = async () => {
     await supabase.auth.signOut();
     navigate("/login");
+    toast.success("Logged out successfully");
   };
 
   const handleRepostSuccess = () => {
     fetchPosts();
   };
 
-  if (loading) {
+  if (loading || loadingPosts) {
     return <Loader />;
   }
   return (
@@ -64,7 +68,7 @@ const LandingPage = () => {
         </button>
         <button
           title="Log Out"
-          className="rounded-full size-10 md:size-12 bg-slate-300 text-blac flex justify-center items-center"
+          className="rounded-full size-10 md:size-12 bg-slate-300 flex justify-center items-center"
           onClick={() => handleLogOut()}
         >
           <IoExitOutline className="size-5 md:size-6" />

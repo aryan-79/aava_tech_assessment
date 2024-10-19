@@ -21,7 +21,7 @@ export const LikeButton = ({ post_id, like_count }: LikeButtonProps) => {
           .select()
           .eq("post_id", post_id)
           .eq("user_id", liker_id)
-          .single();
+          .maybeSingle();
 
         if (error && error.code !== "PGRST116") {
           throw error.message;

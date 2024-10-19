@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import { IoMdCreate } from "react-icons/io";
 import Loader from "@/components/ui/Loader";
 import { useAuthenticated } from "@/hooks/useAuthenticated";
+import { toast } from "react-toastify";
 
 const CreatePost = () => {
   const { user, loading } = useAuthenticated();
@@ -78,10 +79,12 @@ const CreatePost = () => {
       });
 
       if (insertError) throw insertError;
+      toast.success("Post Created");
 
       navigate("/");
     } catch (error) {
       console.error("Error creating post:", error);
+      toast.error("Failed to Create Post");
     } finally {
       setIsSubmitting(false);
     }

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { IoMdShareAlt } from "react-icons/io";
 
 import { useAuthenticated } from "@/hooks/useAuthenticated";
+import { toast } from "react-toastify";
 interface RepostProps {
   postId: string;
   title: string;
@@ -21,6 +22,7 @@ const Repost = ({
   handleRepostSuccess,
 }: RepostProps) => {
   const [showRepostModal, setShowRepostModal] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [repostTitle, setRepostTitle] = useState<string>("");
   const [newRepostCount, setNewRepostCount] = useState<number>(repostCount);
   const supabase = useSupabaseClient();
@@ -32,6 +34,7 @@ const Repost = ({
       alert("Please sign in to repost.");
       return;
     }
+    setLoading(true);
 
     const newTitle = `Original Post Title: ${title}\nRepost Title: ${repostTitle}`;
     const { error } = await supabase.from("posts").insert({
@@ -45,12 +48,13 @@ const Repost = ({
 
     if (error) {
       console.error(`Error in repost: ${error.message}`);
-      alert(`Failed to repost: ${error.message}`);
+      toast.error(`Failed to repost: ${error.message}`);
     } else {
-      alert("Post has been reposted successfully.");
-      setShowRepostModal(false);
       handleRepostSuccess();
       setNewRepostCount((prev) => prev + 1);
+      toast.success("Reposted Successfully");
+      setLoading(false);
+      setShowRepostModal(false);
       const { error: updatePostCountError } = await supabase
         .from("posts")
         .update({
@@ -87,11 +91,15 @@ const Repost = ({
               </div>
 
               <div className="flex justify-center items-center gap-6">
-                <button type="button" className="btn-secondary">
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => setShowRepostModal(false)}
+                >
                   Cancel
                 </button>
                 <button type="submit" className="btn-primary">
-                  Repost
+                  {loading ? "Reposting.." : "Repost"}
                 </button>
               </div>
             </form>
