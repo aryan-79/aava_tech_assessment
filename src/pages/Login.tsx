@@ -74,13 +74,3 @@ export default function Login() {
   }
   return null;
 }
-
-{
-  /* <Auth
-  supabaseClient={supabase}
-  appearance={{ theme: ThemeSupa }}
-  providers={["google", "github"]}
-  showLinks={false}
-  onlyThirdPartyProviders
-/>; */
-}

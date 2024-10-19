@@ -79,7 +79,11 @@ export const LikeButton = ({ post_id, like_count }: LikeButtonProps) => {
   };
 
   return (
-    <button className="flex gap-2 items-center w-10" onClick={handleLike}>
+    <button
+      className="flex gap-2 items-center w-10"
+      onClick={handleLike}
+      aria-label="like"
+    >
       <FaThumbsUp className={cn("size-4", isLiked && "text-blue-800")} />
       <span>{likeCount}</span>
     </button>

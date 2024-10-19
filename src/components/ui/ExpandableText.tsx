@@ -45,7 +45,7 @@ export default function ExpandableText({ text }: ExpandableTextProps) {
         <button
           onClick={toggleExpand}
           className="mt-2 p-0 h-auto font-normal text-sm text-neutral-400"
-          aria-controls="expandable-text"
+          aria-label="expand"
         >
           {isExpanded ? "Show Less" : "Show More"}
         </button>

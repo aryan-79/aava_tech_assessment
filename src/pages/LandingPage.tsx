@@ -1,6 +1,7 @@
 import Post, { PostType } from "@/components/Post";
 import Loader from "@/components/ui/Loader";
 import { useAuthenticated } from "@/hooks/useAuthenticated";
+import { cn } from "@/lib/utils";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useCallback, useEffect, useState } from "react";
 import { IoMdCreate } from "react-icons/io";
@@ -11,7 +12,9 @@ import { toast } from "react-toastify";
 const LandingPage = () => {
   const [posts, setPosts] = useState<PostType[]>([]);
   const [loadingPosts, setLoadingPosts] = useState<boolean>(true);
-  const { loading } = useAuthenticated();
+  const [expanded, setExpanded] = useState<boolean>(false);
+  const { user, loading } = useAuthenticated();
+  const avatar_url = user?.user_metadata.avatar_url;
 
   const navigate = useNavigate();
   const supabase = useSupabaseClient();
@@ -58,21 +61,44 @@ const LandingPage = () => {
         ))}
       </div>
 
-      <div className="flex flex-col gap-4 fixed bottom-4 right-4 text-black">
-        <button
-          title="Write Post"
-          className="rounded-full size-10 md:size-12 bg-slate-300 flex justify-center items-center"
-          onClick={() => navigate("/create")}
+      <div className="fixed bottom-10 right-4 text-black bg-slate-400 p-2 rounded-full z-10">
+        <div
+          className={cn(
+            "overflow-hidden grid grid-rows-[0,auto] transition-all duration-100 ease-out",
+            expanded && "gap-2 grid-rows-[auto,auto]"
+          )}
+          aria-expanded={expanded}
         >
-          <IoMdCreate className="size-5 md:size-6" />
-        </button>
-        <button
-          title="Log Out"
-          className="rounded-full size-10 md:size-12 bg-slate-300 flex justify-center items-center"
-          onClick={() => handleLogOut()}
-        >
-          <IoExitOutline className="size-5 md:size-6" />
-        </button>
+          <div className="flex flex-col gap-2 items-center">
+            <button
+              title="Create Post"
+              className=""
+              onClick={() => navigate("/create")}
+              aria-label="create post"
+            >
+              <IoMdCreate className="size-8" />
+            </button>
+            <button
+              title="Log Out"
+              className=""
+              onClick={() => handleLogOut()}
+              aria-label="log out"
+            >
+              <IoExitOutline className="size-8" />
+            </button>
+          </div>
+          <button
+            className="size-10"
+            onClick={() => setExpanded(!expanded)}
+            aria-label="actions"
+          >
+            <img
+              src={avatar_url}
+              alt="avatar"
+              className="size-10 rounded-full"
+            />
+          </button>
+        </div>
       </div>
     </div>
   );

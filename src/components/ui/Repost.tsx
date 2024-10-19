@@ -112,6 +112,7 @@ const Repost = ({
         onClick={() => {
           setShowRepostModal(!showRepostModal);
         }}
+        aria-label="repost"
       >
         <IoMdShareAlt className="size-5 inline mr-2" />
         <span className="text-sm">{newRepostCount} reposts</span>
