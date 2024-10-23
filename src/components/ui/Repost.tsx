@@ -111,7 +111,11 @@ const Repost = ({
                 >
                   Cancel
                 </button>
-                <button type="submit" className="btn-primary">
+                <button
+                  type="submit"
+                  className="btn-primary"
+                  disabled={loading}
+                >
                   {loading ? "Reposting.." : "Repost"}
                 </button>
               </div>

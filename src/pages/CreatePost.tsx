@@ -140,7 +140,7 @@ const CreatePost = () => {
           <button
             type="button"
             onClick={handleImageSelect}
-            className="border border-neutral-600 rounded-md hover:border-neutral-400 hover:bg-neutral-900 px-4 h-8"
+            className="border border-neutral-600 rounded-md hover:border-neutral-400 hover:bg-neutral-900 px-4 h-8 text-nowrap"
           >
             {image ? "Change Image" : "Select Image"}
           </button>
